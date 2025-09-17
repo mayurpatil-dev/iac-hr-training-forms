@@ -1,0 +1,286 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CORS Test - IAC Training Feedback System</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .test-section {
+            margin: 20px 0;
+            padding: 20px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+        }
+        .success {
+            background-color: #d4edda;
+            border-color: #c3e6cb;
+            color: #155724;
+        }
+        .error {
+            background-color: #f8d7da;
+            border-color: #f5c6cb;
+            color: #721c24;
+        }
+        button {
+            background-color: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+        pre {
+            background-color: #f8f9fa;
+            padding: 10px;
+            border-radius: 5px;
+            overflow-x: auto;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>CORS Test - IAC Training Feedback System</h1>
+        <p>This page tests the CORS configuration of your Google Apps Script web app.</p>
+        
+        <div class="test-section">
+            <h3>Test 1: GET Request (doGet)</h3>
+            <button onclick="testGet()">Test GET Request</button>
+            <div id="getResult"></div>
+        </div>
+        
+        <div class="test-section">
+            <h3>Test 2: POST Request (doPost) - Employee Feedback</h3>
+            <button onclick="testPostEmployee()">Test Employee Feedback POST</button>
+            <div id="postEmployeeResult"></div>
+        </div>
+        
+        <div class="test-section">
+            <h3>Test 3: POST Request (doPost) - HOD Assessment</h3>
+            <button onclick="testPostHOD()">Test HOD Assessment POST</button>
+            <div id="postHODResult"></div>
+        </div>
+        
+        <div class="test-section">
+            <h3>Test 4: OPTIONS Request (doOptions)</h3>
+            <button onclick="testOptions()">Test OPTIONS Request</button>
+            <div id="optionsResult"></div>
+        </div>
+    </div>
+
+    <script>
+        const GOOGLE_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbx8SKL4FpsGrLrGDNDGbtOM0oiPHxEMvY6P3GmKuWPppYldLNzUEJfa9sXlsR7cOR7Z7g/exec';
+        
+        function displayResult(elementId, success, message, data = null) {
+            const element = document.getElementById(elementId);
+            element.className = success ? 'success' : 'error';
+            element.innerHTML = `
+                <h4>${success ? '✅ Success' : '❌ Error'}</h4>
+                <p>${message}</p>
+                ${data ? `<pre>${JSON.stringify(data, null, 2)}</pre>` : ''}
+            `;
+        }
+        
+        async function testGet() {
+            try {
+                console.log('Testing GET request to:', GOOGLE_SCRIPT_URL);
+                
+                const response = await fetch(GOOGLE_SCRIPT_URL, {
+                    method: 'GET',
+                    mode: 'cors',
+                    headers: {
+                        'Accept': 'application/json'
+                    }
+                });
+                
+                console.log('GET response:', {
+                    status: response.status,
+                    statusText: response.statusText,
+                    headers: Object.fromEntries(response.headers.entries())
+                });
+                
+                if (response.ok) {
+                    const contentType = response.headers.get('content-type');
+                    if (contentType && contentType.includes('application/json')) {
+                        const data = await response.json();
+                        displayResult('getResult', true, 'GET request successful!', data);
+                    } else {
+                        const textData = await response.text();
+                        displayResult('getResult', false, `Expected JSON but got ${contentType}: ${textData.substring(0, 200)}`);
+                    }
+                } else {
+                    displayResult('getResult', false, `GET request failed with status: ${response.status} - ${response.statusText}`);
+                }
+            } catch (error) {
+                console.error('GET request error:', error);
+                displayResult('getResult', false, `GET request error: ${error.message}`);
+            }
+        }
+        
+        async function testPostEmployee() {
+            try {
+                const testData = {
+                    formType: 'employee-feedback',
+                    employeeName: 'Test Employee',
+                    employeeCode: 'TEST001',
+                    department: 'IT',
+                    trainingProgramme: 'Test Training',
+                    faculty: 'Test Faculty',
+                    trainingFromDate: '15',
+                    trainingFromMonth: '01',
+                    trainingFromYear: '2025',
+                    trainingToDate: '17',
+                    trainingToMonth: '01',
+                    trainingToYear: '2025',
+                    venue: 'Test Venue',
+                    courseStructure: 4,
+                    courseContent: 4,
+                    qualityOfExercise: 3,
+                    handoutTrainingAids: 4,
+                    durationOfTraining: 3,
+                    trainingCoordination: 4,
+                    trainingEnvironment: 4,
+                    subjectKnowledge: 4,
+                    learningEnvironment: 4,
+                    trainingSkills: 3,
+                    presentationMethodology: 4,
+                    guidanceSupport: 4,
+                    likedBest: 'Test feedback',
+                    couldBeBetter: 'Test suggestions',
+                    learningExperienceComparison: 'Test comparison',
+                    jobResponsibilitiesHelp: 'definitely-large-extent',
+                    recommendToColleagues: 'yes',
+                    participantSignature: 'Test Employee',
+                    submittedAt: new Date().toISOString()
+                };
+                
+                const response = await fetch(GOOGLE_SCRIPT_URL, {
+                    method: 'POST',
+                    mode: 'cors',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(testData)
+                });
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    displayResult('postEmployeeResult', true, 'Employee Feedback POST request successful!', data);
+                } else {
+                    displayResult('postEmployeeResult', false, `Employee Feedback POST request failed with status: ${response.status}`);
+                }
+            } catch (error) {
+                displayResult('postEmployeeResult', false, `Employee Feedback POST request error: ${error.message}`);
+            }
+        }
+        
+        async function testPostHOD() {
+            try {
+                const testData = {
+                    formType: 'hod-assessment',
+                    hodName: 'Test HOD',
+                    department: 'IT',
+                    employeeId: 'TEST001',
+                    assessmentDate: '2025-01-15',
+                    trainingTitle: 'Test Training',
+                    trainingProvider: 'Test Provider',
+                    trainingDates: '2025-01-15 to 2025-01-17',
+                    participantCount: '10',
+                    trainingCost: '5000',
+                    knowledgeRetention: 4,
+                    skillImprovement: 4,
+                    behaviorChange: 3,
+                    jobPerformance: 4,
+                    teamCollaboration: 4,
+                    productivityIncrease: '15',
+                    qualityImprovement: '20',
+                    errorReduction: '25',
+                    costSavings: '10000',
+                    revenueImpact: '50000',
+                    alignsWithGoals: 'yes',
+                    supportsStrategy: 'Test strategy support',
+                    meetsSkillGaps: 'Test skill gaps',
+                    enhancesCapabilities: 'yes',
+                    followUpRequired: 'no',
+                    additionalTraining: 'Test additional training',
+                    recommendations: 'Test recommendations',
+                    budgetRequest: 'Test budget request',
+                    overallRating: 4,
+                    wouldRecommend: 'yes',
+                    criticalSuccessFactors: 'Test factors',
+                    lessonsLearned: 'Test lessons',
+                    improvementAreas: 'Test improvements',
+                    submittedBy: 'test@example.com',
+                    submittedAt: new Date().toISOString()
+                };
+                
+                const response = await fetch(GOOGLE_SCRIPT_URL, {
+                    method: 'POST',
+                    mode: 'cors',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(testData)
+                });
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    displayResult('postHODResult', true, 'HOD Assessment POST request successful!', data);
+                } else {
+                    displayResult('postHODResult', false, `HOD Assessment POST request failed with status: ${response.status}`);
+                }
+            } catch (error) {
+                displayResult('postHODResult', false, `HOD Assessment POST request error: ${error.message}`);
+            }
+        }
+        
+        async function testOptions() {
+            try {
+                const response = await fetch(GOOGLE_SCRIPT_URL, {
+                    method: 'OPTIONS',
+                    mode: 'cors',
+                    headers: {
+                        'Access-Control-Request-Method': 'POST',
+                        'Access-Control-Request-Headers': 'Content-Type'
+                    }
+                });
+                
+                console.log('OPTIONS response:', {
+                    status: response.status,
+                    statusText: response.statusText,
+                    headers: Object.fromEntries(response.headers.entries())
+                });
+                
+                if (response.ok || response.status === 204) {
+                    const headers = {};
+                    response.headers.forEach((value, key) => {
+                        headers[key] = value;
+                    });
+                    displayResult('optionsResult', true, 'OPTIONS request successful!', headers);
+                } else {
+                    displayResult('optionsResult', false, `OPTIONS request failed with status: ${response.status} - ${response.statusText}`);
+                }
+            } catch (error) {
+                console.error('OPTIONS request error:', error);
+                displayResult('optionsResult', false, `OPTIONS request error: ${error.message}`);
+            }
+        }
+    </script>
+</body>
+</html>

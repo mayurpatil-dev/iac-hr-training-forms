@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>IAC Group HOD Assessment Form</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      line-height: 1.6;
+      color: #333;
+      max-width: 800px;
+      margin: 0 auto;
+      padding: 20px;
+    }
+    .container {
+      background-color: #f9f9f9;
+      border-radius: 8px;
+      padding: 20px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+    h1 {
+      color: #1976d2;
+      text-align: center;
+    }
+    .form-group {
+      margin-bottom: 15px;
+    }
+    label {
+      display: block;
+      margin-bottom: 5px;
+      font-weight: bold;
+    }
+    input[type="text"],
+    input[type="date"],
+    textarea,
+    select {
+      width: 100%;
+      padding: 8px;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+      box-sizing: border-box;
+    }
+    textarea {
+      height: 100px;
+    }
+    .section-title {
+      border-bottom: 1px solid #ddd;
+      padding-bottom: 5px;
+      margin-top: 20px;
+      color: #1976d2;
+    }
+    .required {
+      color: red;
+    }
+    .submit-btn {
+      background-color: #1976d2;
+      color: white;
+      border: none;
+      padding: 10px 20px;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 16px;
+      display: block;
+      margin: 20px auto 0;
+    }
+    .submit-btn:hover {
+      background-color: #1565c0;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>IAC Group HOD Assessment Form</h1>
+    
+    <!-- IMPORTANT: Replace with your actual Google Apps Script deployment URL -->
+    <form action="https://script.google.com/macros/s/YOUR_DEPLOYMENT_ID/exec" method="POST">
+      <!-- You can find this URL after deploying your Google Apps Script as a web app -->
+      <input type="hidden" name="formType" value="hod-assessment">
+      
+      <h2 class="section-title">Head of Department Information</h2>
+      <div class="form-group">
+        <label for="hodName">HOD Name <span class="required">*</span></label>
+        <input type="text" id="hodName" name="hodName" required>
+      </div>
+      
+      <div class="form-group">
+        <label for="department">Department <span class="required">*</span></label>
+        <input type="text" id="department" name="department" required>
+      </div>
+      
+      <h2 class="section-title">Employee & Training Information</h2>
+      <div class="form-group">
+        <label for="employeeName">Employee Name <span class="required">*</span></label>
+        <input type="text" id="employeeName" name="employeeName" required>
+      </div>
+      
+      <div class="form-group">
+        <label for="employeeID">Employee ID</label>
+        <input type="text" id="employeeID" name="employeeID">
+      </div>
+      
+      <div class="form-group">
+        <label for="trainingTitle">Training Title <span class="required">*</span></label>
+        <input type="text" id="trainingTitle" name="trainingTitle" required>
+      </div>
+      
+      <div class="form-group">
+        <label for="trainingDate">Training Date <span class="required">*</span></label>
+        <input type="date" id="trainingDate" name="trainingDate" required>
+      </div>
+      
+      <div class="form-group">
+        <label for="assessmentDate">Assessment Date <span class="required">*</span></label>
+        <input type="date" id="assessmentDate" name="assessmentDate" required>
+      </div>
+      
+      <h2 class="section-title">Assessment</h2>
+      
+      <div class="form-group">
+        <label for="knowledgeApplication">How has the employee applied the knowledge gained from the training?</label>
+        <textarea id="knowledgeApplication" name="knowledgeApplication"></textarea>
+      </div>
+      
+      <div class="form-group">
+        <label for="performanceImprovement">What improvements have you observed in the employee's performance after the training?</label>
+        <textarea id="performanceImprovement" name="performanceImprovement"></textarea>
+      </div>
+      
+      <div class="form-group">
+        <label for="additionalTrainingNeeded">Is any additional training needed? If yes, please specify.</label>
+        <textarea id="additionalTrainingNeeded" name="additionalTrainingNeeded"></textarea>
+      </div>
+      
+      <div class="form-group">
+        <label for="hodComments">Additional Comments</label>
+        <textarea id="hodComments" name="hodComments"></textarea>
+      </div>
+      
+      <button type="submit" class="submit-btn">Submit Assessment</button>
+    </form>
+  </div>
+  
+  <script>
+    // Simple form validation
+    document.querySelector('form').addEventListener('submit', function(e) {
+      const requiredFields = ['hodName', 'department', 'employeeName', 'trainingTitle', 'trainingDate', 'assessmentDate'];
+      let isValid = true;
+      
+      requiredFields.forEach(field => {
+        const input = document.getElementById(field);
+        if (!input.value.trim()) {
+          isValid = false;
+          input.style.borderColor = 'red';
+        } else {
+          input.style.borderColor = '#ddd';
+        }
+      });
+      
+      if (!isValid) {
+        e.preventDefault();
+        alert('Please fill in all required fields.');
+      }
+    });
+  </script>
+</body>
+</html>

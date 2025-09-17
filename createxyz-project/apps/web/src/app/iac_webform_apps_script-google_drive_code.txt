@@ -1,0 +1,220 @@
+const CONFIG = {
+  EMPLOYEE_FEEDBACK_SHEET_ID: '1gyVBXss19X3VmiX8A0Ec0u5QZTzdOSGEgEv5-frr6_E',
+  HOD_ASSESSMENT_SHEET_ID: '1xjvshNt6SYRALkY4nzbTvHQmDmduyfBzpjnjwxOvZAE',
+  DRIVE_FOLDER_ID: '1Ohl_X-48N_FPApPQ3mO5Nr3o0vywHbEs'
+};
+
+// Employee Feedback template
+const TEMPLATE_ID = '1XyXJqNjt2709qxULtuBX1dfTMtOq3gdzAvXBsuyvJVM';
+// HOD template (replace with your actual Doc ID)
+const HOD_TEMPLATE_ID = '1P746oKdqLrgShHiZbNGCgkDzYN5a_GC0x-_wOPckfx0';
+
+// Symbols used for checkboxes
+const CHECKED = '☑';
+const UNCHECKED = '☐';
+
+function doPost(e) {
+  try {
+    let data;
+    try {
+      data = JSON.parse(e.postData.contents); // JSON payload
+    } catch (err) {
+      data = e.parameter; // fallback if form-encoded
+    }
+
+    if (data.type === 'employeeFeedback') {
+      return handleEmployeeFeedback_(data);
+    } else if (data.type === 'hodAssessment') {
+      return handleHodAssessment_(data);
+    } else {
+      return jsonOut({ success: false, error: 'Invalid type' });
+    }
+
+  } catch (err) {
+    return jsonOut({ success: false, error: String(err) });
+  }
+}
+
+/* ---------------- EMPLOYEE FEEDBACK ---------------- */
+function handleEmployeeFeedback_(data) {
+  const sheet = SpreadsheetApp.openById(CONFIG.EMPLOYEE_FEEDBACK_SHEET_ID).getActiveSheet();
+  sheet.appendRow([
+    new Date(),
+    data.employeeName || '',
+    data.employeeCode || '',
+    data.department || '',
+    data.trainingProgramme || '',
+    data.faculty || '',
+    data.venue || ''
+  ]);
+
+  const docUrl = createEmployeeFeedbackDoc_(data);
+  return jsonOut({ success: true, data: { docLink: docUrl } });
+}
+
+/* ---------------- HOD ASSESSMENT ---------------- */
+function handleHodAssessment_(data) {
+  const sheet = SpreadsheetApp.openById(CONFIG.HOD_ASSESSMENT_SHEET_ID).getActiveSheet();
+  sheet.appendRow([
+    new Date(),                         // TIME & DATE
+    data.employeeName || '',            // EMPLOYEE NAME
+    data.employeeCode || '',            // EMPLOYEE NO
+    data.trainingImparted || '',        // TRAINING IMPARTED
+    data.dateDuration || '',            // DATE/DURATION
+    data.courseConductedBy || '',       // COURSE CONDUCTED BY
+    data.departmentHead || ''           // DEPARTMENT HEAD
+  ]);
+
+  // 🔽 Transform flat keys into an array
+  const courseContents = [];
+  for (let i = 1; i <= 7; i++) {
+    courseContents.push({
+      content: data[`courseContent_${i}`] || '',
+      levelPrior: data[`levelPrior_${i}`] || '',
+      levelAfter: data[`levelAfter_${i}`] || ''
+    });
+  }
+  data.courseContents = courseContents;
+
+  const docUrl = createHodAssessmentDoc_(data);
+  return jsonOut({ success: true, data: { docLink: docUrl } });
+}
+
+
+/* ---------------- HELPERS ---------------- */
+function jsonOut(obj) {
+  return ContentService
+    .createTextOutput(JSON.stringify(obj))
+    .setMimeType(ContentService.MimeType.JSON);
+}
+
+function safeReplace_(body, placeholder, value) {
+  const pattern = placeholder.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  body.replaceText(pattern, value == null ? '' : String(value));
+}
+
+function rating_(v) {
+  const n = parseInt(v, 10);
+  return (n >= 1 && n <= 4) ? n : 0;
+}
+
+function renderRating_(body, placeholder, rawValue) {
+  const val = rating_(rawValue);
+  let out = '';
+  for (let i = 1; i <= 4; i++) {
+    out += (i === val ? CHECKED : UNCHECKED) + ' ' + i + '  ';
+  }
+  safeReplace_(body, placeholder, out.trim());
+}
+
+function renderOption_(body, selected, optionValue, placeholder) {
+  safeReplace_(body, placeholder, (selected === optionValue) ? CHECKED : UNCHECKED);
+}
+
+function fmtDate_(isoLike) {
+  if (!isoLike) return '';
+  const d = new Date(isoLike);
+  if (isNaN(d.getTime())) return String(isoLike);
+  return d.toLocaleDateString();
+}
+
+/* ---------------- DOC CREATION ---------------- */
+function createEmployeeFeedbackDoc_(data) {
+  const folder = DriveApp.getFolderById(CONFIG.DRIVE_FOLDER_ID);
+  const copy = DriveApp.getFileById(TEMPLATE_ID).makeCopy(
+    `Feedback_${data.employeeName || 'Unknown'}_${new Date().toISOString().slice(0,19).replace(/[:T]/g,'-')}`,
+    folder
+  );
+
+  const doc = DocumentApp.openById(copy.getId());
+  const body = doc.getBody();
+
+  // Text fields
+  safeReplace_(body, '{{EMPLOYEE_NAME}}', data.employeeName || '');
+  safeReplace_(body, '{{EMPLOYEE_CODE}}', data.employeeCode || '');
+  safeReplace_(body, '{{DEPARTMENT}}', data.department || '');
+  safeReplace_(body, '{{TRAINING_PROGRAMME}}', data.trainingProgramme || '');
+  safeReplace_(body, '{{FACULTY}}', data.faculty || '');
+  safeReplace_(body, '{{VENUE}}', data.venue || '');
+  safeReplace_(body, '{{SUBMISSION_DATE}}', new Date().toLocaleDateString());
+  safeReplace_(body, '{{TRAINING_FROM_DATE}}', fmtDate_(data.trainingFromDate));
+  safeReplace_(body, '{{TRAINING_TO_DATE}}', fmtDate_(data.trainingToDate));
+
+  // Ratings
+  renderRating_(body, '{{COURSE_STRUCTURE}}',          data.courseStructure);
+  renderRating_(body, '{{QUALITY_OF_EXERCISE}}',       data.qualityOfExercise);
+  renderRating_(body, '{{DURATION_OF_TRAINING}}',      data.durationOfTraining);
+  renderRating_(body, '{{TRAINING_ENVIRONMENT}}',      data.trainingEnvironment);
+  renderRating_(body, '{{COURSE_CONTENT}}',            data.courseContent);
+  renderRating_(body, '{{HANDOUT_TRAINING_AIDS}}',     data.handoutTrainingAids);
+  renderRating_(body, '{{TRAINING_COORDINATION}}',     data.trainingCoordination);
+  renderRating_(body, '{{SUBJECT_KNOWLEDGE}}',         data.subjectKnowledge);
+  renderRating_(body, '{{LEARNING_ENVIRONMENT}}',      data.learningEnvironment);
+  renderRating_(body, '{{TRAINING_SKILLS}}',           data.trainingSkills);
+  renderRating_(body, '{{PRESENTATION_METHODLOGY}}',   data.presentationMethodology);
+  renderRating_(body, '{{PRESENTATION_METHODOLOGY}}',  data.presentationMethodology);
+  renderRating_(body, '{{GUIDANCE_SUPPORT}}',          data.guidanceSupport);
+
+  // Open text
+  safeReplace_(body, '{{LIKED_BEST}}',      data.likedBest || '');
+  safeReplace_(body, '{{COULD_BE_BETTER}}', data.couldBeBetter || '');
+  safeReplace_(body, '{{PARTICIPANT_SIGNATURE}}', data.participantSignature || '');
+
+  // Page 2 – Options
+  renderOption_(body, data.learningExperienceComparison, 'learned-much-more',     '{{LEARNING_MUCH_MORE}}');
+  renderOption_(body, data.learningExperienceComparison, 'learned-somewhat-more', '{{LEARNING_SOMEWHAT_MORE}}');
+  renderOption_(body, data.learningExperienceComparison, 'learned-somewhat-less', '{{LEARNING_SOMEWHAT_LESS}}');
+  renderOption_(body, data.learningExperienceComparison, 'learned-much-less',     '{{LEARNING_MUCH_LESS}}');
+
+  renderOption_(body, data.jobResponsibilitiesHelp, 'definitely-large-extent', '{{JOB_HELP_DEFINITELY}}');
+  renderOption_(body, data.jobResponsibilitiesHelp, 'probably-some-extent',    '{{JOB_HELP_PROBABLY}}');
+  renderOption_(body, data.jobResponsibilitiesHelp, 'not-sure',                 '{{JOB_HELP_NOTSURE}}');
+  renderOption_(body, data.jobResponsibilitiesHelp, 'definitely-not',           '{{JOB_HELP_NO}}');
+
+  renderOption_(body, data.recommendToColleagues, 'definitely',      '{{RECOMMEND_DEFINITELY}}');
+  renderOption_(body, data.recommendToColleagues, 'probably',        '{{RECOMMEND_PROBABLY}}');
+  renderOption_(body, data.recommendToColleagues, 'not-certain',     '{{RECOMMEND_NOTCERTAIN}}');
+  renderOption_(body, data.recommendToColleagues, 'definitely-not',  '{{RECOMMEND_NO}}');
+
+  doc.saveAndClose();
+  return doc.getUrl();
+}
+
+function createHodAssessmentDoc_(data) {
+  const folder = DriveApp.getFolderById(CONFIG.DRIVE_FOLDER_ID);
+  const copy = DriveApp.getFileById(HOD_TEMPLATE_ID).makeCopy(
+    `HODAssessment_${data.employeeName || 'Unknown'}_${new Date().toISOString().slice(0,19).replace(/[:T]/g,'-')}`,
+    folder
+  );
+
+  const doc = DocumentApp.openById(copy.getId());
+  const body = doc.getBody();
+
+  // Header Info
+  safeReplace_(body, '{{EMPLOYEE_NAME}}', data.employeeName || '');
+  safeReplace_(body, '{{EMPLOYEE_CODE}}', data.employeeCode || '');
+  safeReplace_(body, '{{TRAINING_IMPARTED}}', data.trainingImparted || '');
+  safeReplace_(body, '{{DATE_DURATION}}', data.dateDuration || '');
+  safeReplace_(body, '{{COURSE_CONDUCTED_BY}}', data.courseConductedBy || '');
+  safeReplace_(body, '{{DEPARTMENT_HEAD}}', data.departmentHead || '');
+  safeReplace_(body, '{{SUBMISSION_DATE}}', new Date().toLocaleDateString());
+
+  // Course Content Rows (1–7)
+  if (data.courseContents && Array.isArray(data.courseContents)) {
+    data.courseContents.forEach((row, i) => {
+      const idx = i + 1;
+      safeReplace_(body, `{{COURSE_CONTENT_${idx}}}`, row.content || '');
+      safeReplace_(body, `{{LEVEL_PRIOR_${idx}}}`, row.levelPrior || '');
+      safeReplace_(body, `{{LEVEL_AFTER_${idx}}}`, row.levelAfter || '');
+    });
+  }
+
+  // Observations A–D
+safeReplace_(body, '{{OBSERVATION_A}}', data.observationA || '');
+safeReplace_(body, '{{OBSERVATION_B}}', data.observationB || '');
+safeReplace_(body, '{{OBSERVATION_C}}', data.observationC || '');
+safeReplace_(body, '{{OBSERVATION_D}}', data.observationD || '');
+
+  doc.saveAndClose();
+  return doc.getUrl();
+}

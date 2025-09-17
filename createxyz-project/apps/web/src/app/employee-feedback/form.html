@@ -1,0 +1,303 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>IAC Group Training Feedback Form</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      line-height: 1.6;
+      color: #333;
+      max-width: 800px;
+      margin: 0 auto;
+      padding: 20px;
+    }
+    .container {
+      background-color: #f9f9f9;
+      border-radius: 8px;
+      padding: 20px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+    h1 {
+      color: #1976d2;
+      text-align: center;
+    }
+    .form-group {
+      margin-bottom: 15px;
+    }
+    label {
+      display: block;
+      margin-bottom: 5px;
+      font-weight: bold;
+    }
+    input[type="text"],
+    input[type="date"],
+    textarea,
+    select {
+      width: 100%;
+      padding: 8px;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+      box-sizing: border-box;
+    }
+    textarea {
+      height: 100px;
+    }
+    .rating-container {
+      display: flex;
+      flex-direction: column;
+      margin-bottom: 20px;
+    }
+    .rating-item {
+      margin-bottom: 10px;
+    }
+    .rating-stars {
+      display: flex;
+      gap: 10px;
+    }
+    .rating-label {
+      font-weight: bold;
+      margin-bottom: 5px;
+    }
+    .star-rating {
+      display: flex;
+    }
+    .star-rating input {
+      display: none;
+    }
+    .star-rating label {
+      cursor: pointer;
+      width: 25px;
+      height: 25px;
+      background-color: #ddd;
+      border-radius: 50%;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      margin-right: 5px;
+      color: white;
+    }
+    .star-rating input:checked ~ label {
+      background-color: #1976d2;
+    }
+    .star-rating label:hover,
+    .star-rating label:hover ~ label {
+      background-color: #2196f3;
+    }
+    .section-title {
+      border-bottom: 1px solid #ddd;
+      padding-bottom: 5px;
+      margin-top: 20px;
+      color: #1976d2;
+    }
+    .required {
+      color: red;
+    }
+    .submit-btn {
+      background-color: #1976d2;
+      color: white;
+      border: none;
+      padding: 10px 20px;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 16px;
+      display: block;
+      margin: 20px auto 0;
+    }
+    .submit-btn:hover {
+      background-color: #1565c0;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>IAC Group Training Feedback Form</h1>
+    
+    <!-- IMPORTANT: Replace with your actual Google Apps Script deployment URL -->
+    <form action="https://script.google.com/macros/s/YOUR_DEPLOYMENT_ID/exec" method="POST">
+      <!-- You can find this URL after deploying your Google Apps Script as a web app -->
+      <input type="hidden" name="formType" value="employee-feedback">
+      
+      <h2 class="section-title">Employee Information</h2>
+      <div class="form-group">
+        <label for="employeeName">Employee Name <span class="required">*</span></label>
+        <input type="text" id="employeeName" name="employeeName" required>
+      </div>
+      
+      <div class="form-group">
+        <label for="employeeID">Employee ID</label>
+        <input type="text" id="employeeID" name="employeeID">
+      </div>
+      
+      <div class="form-group">
+        <label for="department">Department</label>
+        <input type="text" id="department" name="department">
+      </div>
+      
+      <h2 class="section-title">Training Information</h2>
+      <div class="form-group">
+        <label for="trainingProgramme">Training Programme <span class="required">*</span></label>
+        <input type="text" id="trainingProgramme" name="trainingProgramme" required>
+      </div>
+      
+      <div class="form-group">
+        <label for="trainingFromDate">Training From Date <span class="required">*</span></label>
+        <input type="date" id="trainingFromDate" name="trainingFromDate" required>
+      </div>
+      
+      <div class="form-group">
+        <label for="trainingToDate">Training To Date <span class="required">*</span></label>
+        <input type="date" id="trainingToDate" name="trainingToDate" required>
+      </div>
+      
+      <div class="form-group">
+        <label for="trainerName">Trainer Name <span class="required">*</span></label>
+        <input type="text" id="trainerName" name="trainerName" required>
+      </div>
+      
+      <h2 class="section-title">Training Evaluation</h2>
+      <p>Please rate the following aspects of the training (1 = Poor, 5 = Excellent)</p>
+      
+      <div class="rating-container">
+        <div class="rating-item">
+          <div class="rating-label">Relevance to Job</div>
+          <div class="star-rating">
+            <input type="radio" id="relevance-1" name="ratings.relevance" value="1">
+            <label for="relevance-1">1</label>
+            <input type="radio" id="relevance-2" name="ratings.relevance" value="2">
+            <label for="relevance-2">2</label>
+            <input type="radio" id="relevance-3" name="ratings.relevance" value="3">
+            <label for="relevance-3">3</label>
+            <input type="radio" id="relevance-4" name="ratings.relevance" value="4">
+            <label for="relevance-4">4</label>
+            <input type="radio" id="relevance-5" name="ratings.relevance" value="5">
+            <label for="relevance-5">5</label>
+          </div>
+        </div>
+        
+        <div class="rating-item">
+          <div class="rating-label">Content Quality</div>
+          <div class="star-rating">
+            <input type="radio" id="content-1" name="ratings.content" value="1">
+            <label for="content-1">1</label>
+            <input type="radio" id="content-2" name="ratings.content" value="2">
+            <label for="content-2">2</label>
+            <input type="radio" id="content-3" name="ratings.content" value="3">
+            <label for="content-3">3</label>
+            <input type="radio" id="content-4" name="ratings.content" value="4">
+            <label for="content-4">4</label>
+            <input type="radio" id="content-5" name="ratings.content" value="5">
+            <label for="content-5">5</label>
+          </div>
+        </div>
+        
+        <div class="rating-item">
+          <div class="rating-label">Presentation Quality</div>
+          <div class="star-rating">
+            <input type="radio" id="presentation-1" name="ratings.presentation" value="1">
+            <label for="presentation-1">1</label>
+            <input type="radio" id="presentation-2" name="ratings.presentation" value="2">
+            <label for="presentation-2">2</label>
+            <input type="radio" id="presentation-3" name="ratings.presentation" value="3">
+            <label for="presentation-3">3</label>
+            <input type="radio" id="presentation-4" name="ratings.presentation" value="4">
+            <label for="presentation-4">4</label>
+            <input type="radio" id="presentation-5" name="ratings.presentation" value="5">
+            <label for="presentation-5">5</label>
+          </div>
+        </div>
+        
+        <div class="rating-item">
+          <div class="rating-label">Interactivity</div>
+          <div class="star-rating">
+            <input type="radio" id="interactivity-1" name="ratings.interactivity" value="1">
+            <label for="interactivity-1">1</label>
+            <input type="radio" id="interactivity-2" name="ratings.interactivity" value="2">
+            <label for="interactivity-2">2</label>
+            <input type="radio" id="interactivity-3" name="ratings.interactivity" value="3">
+            <label for="interactivity-3">3</label>
+            <input type="radio" id="interactivity-4" name="ratings.interactivity" value="4">
+            <label for="interactivity-4">4</label>
+            <input type="radio" id="interactivity-5" name="ratings.interactivity" value="5">
+            <label for="interactivity-5">5</label>
+          </div>
+        </div>
+        
+        <div class="rating-item">
+          <div class="rating-label">Venue & Facilities</div>
+          <div class="star-rating">
+            <input type="radio" id="venue-1" name="ratings.venue" value="1">
+            <label for="venue-1">1</label>
+            <input type="radio" id="venue-2" name="ratings.venue" value="2">
+            <label for="venue-2">2</label>
+            <input type="radio" id="venue-3" name="ratings.venue" value="3">
+            <label for="venue-3">3</label>
+            <input type="radio" id="venue-4" name="ratings.venue" value="4">
+            <label for="venue-4">4</label>
+            <input type="radio" id="venue-5" name="ratings.venue" value="5">
+            <label for="venue-5">5</label>
+          </div>
+        </div>
+        
+        <div class="rating-item">
+          <div class="rating-label">Overall Rating</div>
+          <div class="star-rating">
+            <input type="radio" id="overall-1" name="ratings.overall" value="1">
+            <label for="overall-1">1</label>
+            <input type="radio" id="overall-2" name="ratings.overall" value="2">
+            <label for="overall-2">2</label>
+            <input type="radio" id="overall-3" name="ratings.overall" value="3">
+            <label for="overall-3">3</label>
+            <input type="radio" id="overall-4" name="ratings.overall" value="4">
+            <label for="overall-4">4</label>
+            <input type="radio" id="overall-5" name="ratings.overall" value="5">
+            <label for="overall-5">5</label>
+          </div>
+        </div>
+      </div>
+      
+      <h2 class="section-title">Additional Feedback</h2>
+      <div class="form-group">
+        <label for="strengths">What were the strengths of this training?</label>
+        <textarea id="strengths" name="strengths"></textarea>
+      </div>
+      
+      <div class="form-group">
+        <label for="improvements">What areas of the training could be improved?</label>
+        <textarea id="improvements" name="improvements"></textarea>
+      </div>
+      
+      <div class="form-group">
+        <label for="additionalComments">Additional Comments</label>
+        <textarea id="additionalComments" name="additionalComments"></textarea>
+      </div>
+      
+      <button type="submit" class="submit-btn">Submit Feedback</button>
+    </form>
+  </div>
+  
+  <script>
+    // Simple form validation
+    document.querySelector('form').addEventListener('submit', function(e) {
+      const requiredFields = ['employeeName', 'trainingProgramme', 'trainingFromDate', 'trainingToDate', 'trainerName'];
+      let isValid = true;
+      
+      requiredFields.forEach(field => {
+        const input = document.getElementById(field);
+        if (!input.value.trim()) {
+          isValid = false;
+          input.style.borderColor = 'red';
+        } else {
+          input.style.borderColor = '#ddd';
+        }
+      });
+      
+      if (!isValid) {
+        e.preventDefault();
+        alert('Please fill in all required fields.');
+      }
+    });
+  </script>
+</body>
+</html>
