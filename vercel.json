@@ -1,4 +1,5 @@
 {
+  "installCommand": "cd createxyz-project/apps/web && npm install",
   "buildCommand": "cd createxyz-project/apps/web && npm run build",
   "outputDirectory": "createxyz-project/apps/web/dist",
   "rewrites": [
