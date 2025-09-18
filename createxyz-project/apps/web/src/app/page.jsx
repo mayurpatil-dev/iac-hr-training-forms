@@ -3,7 +3,6 @@ import { Link } from 'react-router-dom';
 import React from 'react';
 import ReactDOM from 'react-dom/client';
 import { Building2, Users, ClipboardCheck } from 'lucide-react';
-import './global.css';
 
 
 export default function HomePage() {
