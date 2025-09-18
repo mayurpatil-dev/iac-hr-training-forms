@@ -12,9 +12,9 @@ export default function HRDashboardPage() {
   const [searchType, setSearchType] = useState("name");
 
   const HR_TEAM = [
-    { name: "Neha Sharma", role: "HR Manager", photo: "https://i.pravatar.cc/150?img=32" },
+    { name: "Shrikant Patil", role: "HR Manager", photo: "/Hr-manager.jpeg" },
     { name: "Ravi Kumar", role: "Training Coordinator", photo: "https://i.pravatar.cc/150?img=12" },
-    { name: "Anjali Mehta", role: "HR Executive", photo: "https://i.pravatar.cc/150?img=45" },
+    { name: "Lalit Chavan", role: "HR Officer", photo: "/hr-officer.jpeg" },
   ];
 
   const EMPLOYEE_WEB_APP_URL =
