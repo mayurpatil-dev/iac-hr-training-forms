@@ -13,7 +13,7 @@ export default function HRDashboardPage() {
 
   const HR_TEAM = [
     { name: "Shrikant Patil", role: "HR Manager", photo: "/Hr-manager.jpeg" },
-    { name: "Ravi Kumar", role: "Training Coordinator", photo: "https://i.pravatar.cc/150?img=12" },
+    { name: "Trupti Ghuge", role: "Training Coordinator", photo: "/hr-coordinator.jpeg" },
     { name: "Lalit Chavan", role: "HR Officer", photo: "/hr-officer.jpeg" },
   ];
 
@@ -51,15 +51,49 @@ export default function HRDashboardPage() {
     const url = type === "employee" ? EMPLOYEE_WEB_APP_URL : HOD_WEB_APP_URL;
 
     try {
-      const res = await fetch(url);
+      // Try direct fetch first
+      const res = await fetch(url, {
+        method: 'GET',
+        mode: 'cors',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
+      
+      if (!res.ok) {
+        throw new Error(`HTTP error! status: ${res.status}`);
+      }
+      
       const json = await res.json();
       if (json.success) {
         setFeedbacks(json.data.map(normalizeKeys));
       } else {
         console.error("Error fetching sheet:", json.error);
+        alert(`Error: ${json.error || 'Failed to fetch data'}`);
       }
     } catch (err) {
       console.error("Fetch error:", err);
+      
+      // Show user-friendly error message
+      if (err.message.includes('CORS') || err.message.includes('network')) {
+        alert('Network Error: This might be due to company firewall restrictions. Please contact IT support or try from a different network.');
+      } else {
+        alert(`Error loading data: ${err.message}`);
+      }
+      
+      // Try alternative approach with JSONP-like method
+      try {
+        const proxyUrl = `https://api.allorigins.win/get?url=${encodeURIComponent(url)}`;
+        const proxyRes = await fetch(proxyUrl);
+        const proxyData = await proxyRes.json();
+        const json = JSON.parse(proxyData.contents);
+        
+        if (json.success) {
+          setFeedbacks(json.data.map(normalizeKeys));
+        }
+      } catch (proxyErr) {
+        console.error("Proxy fetch also failed:", proxyErr);
+      }
     } finally {
       setLoading(false);
     }

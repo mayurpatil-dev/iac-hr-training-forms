@@ -4,6 +4,45 @@ const CONFIG = {
   DRIVE_FOLDER_ID: '1Ohl_X-48N_FPApPQ3mO5Nr3o0vywHbEs'
 };
 
+function doGet(e) {
+  // Handle CORS preflight
+  const output = ContentService.createTextOutput();
+  output.setMimeType(ContentService.MimeType.JSON);
+  
+  try {
+    const sheetId = e.parameter.type === 'employee' ? CONFIG.EMPLOYEE_FEEDBACK_SHEET_ID : CONFIG.HOD_ASSESSMENT_SHEET_ID;
+    const sheet = SpreadsheetApp.openById(sheetId).getSheets()[0];
+    const data = sheet.getDataRange().getValues();
+    
+    // Convert to array of objects
+    const headers = data[0];
+    const rows = data.slice(1).map(row => {
+      const obj = {};
+      headers.forEach((header, index) => {
+        obj[header] = row[index];
+      });
+      return obj;
+    });
+    
+    const response = {
+      success: true,
+      data: rows
+    };
+    
+    output.setContent(JSON.stringify(response));
+    
+  } catch (error) {
+    const response = {
+      success: false,
+      error: error.message
+    };
+    output.setContent(JSON.stringify(response));
+  }
+  
+  // Add CORS headers
+  return output;
+}
+
 function doPost(e) {
   try {
     const data = e.parameter;
